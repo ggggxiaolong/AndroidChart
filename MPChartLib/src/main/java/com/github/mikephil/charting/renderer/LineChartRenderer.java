@@ -433,7 +433,7 @@ public class LineChartRenderer extends LineRadarRenderer {
         mGetPositionBuffer[1] = textPoint.getY() * phaseY;
         mGetPositionBuffer[0] = textPoint.getX();
         trans.pointValuesToPixel(mGetPositionBuffer);
-        this.drawText(this.mBitmapCanvas, filedData.name, mGetPositionBuffer[0], mGetPositionBuffer[1] - filedData.nameOffsite, filedData.fillColor);
+        this.drawText(this.mBitmapCanvas, filedData.name, mGetPositionBuffer[0] + filedData.nameOffsite.x, mGetPositionBuffer[1] - filedData.nameOffsite.y, filedData.fillColor);
     }
 
     /**
