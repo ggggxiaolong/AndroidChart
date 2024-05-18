@@ -64,6 +64,9 @@ public class LineDataSet extends LineRadarDataSet<Entry> implements ILineDataSet
 
     private boolean mDrawCircleHole = true;
 
+    private boolean mMultiDrawFilled;
+    private List<MultiFiledData> mMultiFiledDataList;
+
 
     public LineDataSet(List<Entry> yVals, String label) {
         super(yVals, label);
@@ -406,6 +409,22 @@ public class LineDataSet extends LineRadarDataSet<Entry> implements ILineDataSet
     @Override
     public IFillFormatter getFillFormatter() {
         return mFillFormatter;
+    }
+
+    public void setDrawMultiFilled(boolean enabled) {
+        this.mMultiDrawFilled = enabled;
+    }
+
+    public boolean isDrawMultiFilledEnable() {
+        return this.mMultiDrawFilled;
+    }
+
+    public List<MultiFiledData> getMultiFiledDataList() {
+        return this.mMultiFiledDataList;
+    }
+
+    public void setMultiFiledDataList(List<MultiFiledData> list) {
+        this.mMultiFiledDataList = list;
     }
 
     public enum Mode {

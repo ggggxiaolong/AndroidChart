@@ -71,43 +71,44 @@ class LineChartActivity1 : DemoBase(), OnSeekBarChangeListener, OnChartValueSele
         binding.chart1.setPinchZoom(true)
 
         // vertical grid lines
-        binding.chart1.xAxis.enableGridDashedLine(10f, 10f, 0f)
+//        binding.chart1.xAxis.enableGridDashedLine(10f, 10f, 0f)
 
         // disable dual axis (only use LEFT axis)
         binding.chart1.axisRight.isEnabled = false
 
         // horizontal grid lines
-        binding.chart1.axisLeft.enableGridDashedLine(10f, 10f, 0f)
+//        binding.chart1.axisLeft.enableGridDashedLine(10f, 10f, 0f)
 
         // axis range
         binding.chart1.axisLeft.axisMaximum = 200f
         binding.chart1.axisLeft.axisMinimum = -50f
-        val llXAxis = LimitLine(9f, "Index 10")
-        llXAxis.lineWidth = 4f
-        llXAxis.enableDashedLine(10f, 10f, 0f)
-        llXAxis.labelPosition = LimitLabelPosition.RIGHT_BOTTOM
-        llXAxis.textSize = 10f
-        llXAxis.typeface = tfRegular
-        val limitLine1 = LimitLine(150f, "Upper Limit")
-        limitLine1.lineWidth = 4f
-        limitLine1.enableDashedLine(10f, 10f, 0f)
-        limitLine1.labelPosition = LimitLabelPosition.RIGHT_TOP
-        limitLine1.textSize = 10f
-        limitLine1.typeface = tfRegular
-        val limitLine2 = LimitLine(-30f, "Lower Limit")
-        limitLine2.lineWidth = 4f
-        limitLine2.enableDashedLine(10f, 10f, 0f)
-        limitLine2.labelPosition = LimitLabelPosition.RIGHT_BOTTOM
-        limitLine2.textSize = 10f
-        limitLine2.typeface = tfRegular
+
+//        val llXAxis = LimitLine(9f, "Index 10")
+//        llXAxis.lineWidth = 4f
+//        llXAxis.enableDashedLine(10f, 10f, 0f)
+//        llXAxis.labelPosition = LimitLabelPosition.RIGHT_BOTTOM
+//        llXAxis.textSize = 10f
+//        llXAxis.typeface = tfRegular
+//        val limitLine1 = LimitLine(150f, "Upper Limit")
+//        limitLine1.lineWidth = 4f
+//        limitLine1.enableDashedLine(10f, 10f, 0f)
+//        limitLine1.labelPosition = LimitLabelPosition.RIGHT_TOP
+//        limitLine1.textSize = 10f
+//        limitLine1.typeface = tfRegular
+//        val limitLine2 = LimitLine(-30f, "Lower Limit")
+//        limitLine2.lineWidth = 4f
+//        limitLine2.enableDashedLine(10f, 10f, 0f)
+//        limitLine2.labelPosition = LimitLabelPosition.RIGHT_BOTTOM
+//        limitLine2.textSize = 10f
+//        limitLine2.typeface = tfRegular
 
         // draw limit lines behind data instead of on top
-        binding.chart1.axisLeft.setDrawLimitLinesBehindData(true)
-        binding.chart1.xAxis.setDrawLimitLinesBehindData(true)
-
-        // add limit lines
-        binding.chart1.axisLeft.addLimitLine(limitLine1)
-        binding.chart1.axisLeft.addLimitLine(limitLine2)
+//        binding.chart1.axisLeft.setDrawLimitLinesBehindData(true)
+//        binding.chart1.xAxis.setDrawLimitLinesBehindData(true)
+//
+//        // add limit lines
+//        binding.chart1.axisLeft.addLimitLine(limitLine1)
+//        binding.chart1.axisLeft.addLimitLine(limitLine2)
         //xAxis.addLimitLine(llXAxis);
 
         // add data
@@ -162,7 +163,7 @@ class LineChartActivity1 : DemoBase(), OnSeekBarChangeListener, OnChartValueSele
             }
 
             R.id.actionToggleFilled -> {
-                binding.chart1.data?.dataSets?.let {
+                binding.chart1.data?.dataSets?.get(0)?.let {
                     val set = it as LineDataSet
                     set.setDrawFilled(!set.isDrawFilledEnabled)
                     binding.chart1.invalidate()

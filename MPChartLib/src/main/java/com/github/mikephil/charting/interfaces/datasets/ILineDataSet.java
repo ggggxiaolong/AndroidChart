@@ -4,7 +4,10 @@ import android.graphics.DashPathEffect;
 
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.data.MultiFiledData;
 import com.github.mikephil.charting.formatter.IFillFormatter;
+
+import java.util.List;
 
 /**
  * Created by Philpp Jahoda on 21/10/15.
@@ -100,4 +103,12 @@ public interface ILineDataSet extends ILineRadarDataSet<Entry> {
      * @return
      */
     IFillFormatter getFillFormatter();
+
+    void setDrawFilled(boolean var1);
+
+    boolean isDrawMultiFilledEnable();
+
+    void setDrawMultiFilled(boolean var1);
+
+    List<MultiFiledData> getMultiFiledDataList();
 }

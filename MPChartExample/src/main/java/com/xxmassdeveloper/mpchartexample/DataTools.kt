@@ -9,6 +9,7 @@ import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.data.MultiFiledData
 import com.github.mikephil.charting.formatter.IFillFormatter
 import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
@@ -145,6 +146,8 @@ class DataTools {
         fun setData(context: Context, lineChart: LineChart, count: Int = VAL_COUNT, range: Float = VAL_RANGE) {
             Log.d("setData", "$count= range=$range")
             val values = ArrayList<Entry>()
+            val fills = ArrayList<MultiFiledData>()
+            fills.add(MultiFiledData(13, 19, Color.GREEN, "CH4", 10))
             if (count == VAL_COUNT) {
                 VAL_FIX.forEachIndexed { index, d ->
                     values.add(Entry(index.toFloat(), d.toFloat(), ContextCompat.getDrawable(context, R.drawable.star)))
@@ -160,6 +163,12 @@ class DataTools {
                     val lineDataSet0 = it.getDataSetByIndex(0) as LineDataSet
                     lineDataSet0.entries = values
                     lineDataSet0.notifyDataSetChanged()
+//                    lineDataSet0.valueFormatter
+                    lineDataSet0.valueTextSize = 20f
+                    lineDataSet0.setDrawMultiFilled(true)
+                    lineDataSet0.multiFiledDataList = fills
+                    lineDataSet0.setDrawValues(false)
+                    lineDataSet0.setDrawCircles(false)
                     it.notifyDataChanged()
                     lineChart.notifyDataSetChanged()
                 } else

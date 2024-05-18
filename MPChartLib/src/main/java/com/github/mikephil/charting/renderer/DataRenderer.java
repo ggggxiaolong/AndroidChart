@@ -152,6 +152,11 @@ public abstract class DataRenderer extends Renderer {
         c.drawText(formatter.getFormattedValue(value, entry, dataSetIndex, mViewPortHandler), x, y, mValuePaint);
     }
 
+    public void drawText(Canvas c, String text, float x, float y, int color) {
+        mValuePaint.setColor(color);
+        c.drawText(text, x, y, mValuePaint);
+    }
+
     /**
      * Draws any kind of additional information (e.g. line-circles).
      *

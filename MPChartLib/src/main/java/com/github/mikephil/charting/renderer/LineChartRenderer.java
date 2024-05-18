@@ -6,12 +6,14 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 
 import com.github.mikephil.charting.animation.ChartAnimator;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.data.MultiFiledData;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider;
 import com.github.mikephil.charting.interfaces.datasets.IDataSet;
@@ -25,6 +27,7 @@ import com.github.mikephil.charting.utils.ViewPortHandler;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 public class LineChartRenderer extends LineRadarRenderer {
@@ -55,6 +58,10 @@ public class LineChartRenderer extends LineRadarRenderer {
 
     protected Path cubicPath = new Path();
     protected Path cubicFillPath = new Path();
+
+    protected Path cubicMultiFillPath = new Path();
+
+    protected float[] mGetPositionBuffer = new float[2];
 
     public LineChartRenderer(LineDataProvider chart, ChartAnimator animator,
                              ViewPortHandler viewPortHandler) {
@@ -163,9 +170,63 @@ public class LineChartRenderer extends LineRadarRenderer {
             }
         }
 
-        // if filled is enabled, close the path
-        if (dataSet.isDrawFilledEnabled()) {
+        List<MultiFiledData> multiFiledDataList = dataSet.getMultiFiledDataList();
+        if (dataSet.isDrawMultiFilledEnable() && multiFiledDataList != null) {
+            applyValueTextStyle(dataSet);
+            Iterator<MultiFiledData> var18 = multiFiledDataList.iterator();
+            label54:
+            while(true) {
+                MultiFiledData data;
+                do {
+                    do {
+                        do {
+                            if (!var18.hasNext()) {
+                                break label54;
+                            }
+                            data = (MultiFiledData)var18.next();
+                        } while(data.range <= 1);
+                    } while(data.endIndex <= this.mXBounds.min);
+                } while(data.startIndex >= this.mXBounds.max);
+                this.cubicMultiFillPath.reset();
+                Entry firstPoint = dataSet.getEntryForIndex(data.startIndex);
+                Entry endPoint = dataSet.getEntryForIndex(data.endIndex);
+                Entry textPoint = firstPoint;
+                float k = (endPoint.getY() - firstPoint.getY()) / (endPoint.getX() - firstPoint.getX());
+                float b = firstPoint.getY() - firstPoint.getX() * k;
+//                Log.i("multiFill", String.format("first: %s, second: %s, k: %f, b: %f", firstPoint.toString(), endPoint.toString(), k, b));
+                int minIndex = Math.max(this.mXBounds.min, data.startIndex);
+                int maxIndex = Math.min(this.mXBounds.max, data.endIndex);
+                Entry prev = dataSet.getEntryForIndex(minIndex);
+                Entry cur = prev;
+                this.cubicMultiFillPath.moveTo(prev.getX(), prev.getY() * phaseY);
 
+                for(int j = minIndex + 1; j <= maxIndex; ++j) {
+                    prev = cur;
+                    cur = dataSet.getEntryForIndex(j);
+                    if (cur.getY() > textPoint.getY()){
+                        textPoint = cur;
+                    }
+                    float cpx = prev.getX() + (cur.getX() - prev.getX()) / 2.0F;
+                    this.cubicMultiFillPath.cubicTo(cpx, prev.getY() * phaseY, cpx, cur.getY() * phaseY, cur.getX(), cur.getY() * phaseY);
+                }
+
+                float x;
+                if (this.mXBounds.max < data.endIndex) {
+                    x = endPoint.getX();
+                    this.cubicMultiFillPath.lineTo(x, (x * k + b) * phaseY);
+                }
+
+                if (this.mXBounds.min > data.startIndex) {
+                    cur = dataSet.getEntryForIndex(this.mXBounds.min - 1);
+                    x = cur.getX();
+                    Log.i("multiFill", String.format("min: %d, startIndex: %d, x: %f,getY :%f, y: %f, phaseY: %f", this.mXBounds.min, data.startIndex, x, cur.getY(), (x * k + b) * phaseY, phaseY));
+                    this.cubicMultiFillPath.lineTo(x, (x * k + b) * phaseY);
+                }
+
+                this.cubicMultiFillPath.close();
+                this.drawCubicMultiFill(this.mBitmapCanvas, this.cubicMultiFillPath, trans, data, phaseY, textPoint);
+            }
+        } else if (dataSet.isDrawFilledEnabled()) {
             cubicFillPath.reset();
             cubicFillPath.addPath(cubicPath);
             // create a new path, this is bad for performance
@@ -194,10 +255,13 @@ public class LineChartRenderer extends LineRadarRenderer {
         float intensity = dataSet.getCubicIntensity();
 
         cubicPath.reset();
-
+        float prevDx;
+        Entry firstPoint;
+        Entry endPoint;
+        Entry textPoint;
         if (mXBounds.range >= 1) {
 
-            float prevDx = 0f;
+            prevDx = 0f;
             float prevDy = 0f;
             float curDx = 0f;
             float curDy = 0f;
@@ -241,8 +305,82 @@ public class LineChartRenderer extends LineRadarRenderer {
             }
         }
 
-        // if filled is enabled, close the path
-        if (dataSet.isDrawFilledEnabled()) {
+        List<MultiFiledData> multiFiledDataList = dataSet.getMultiFiledDataList();
+        if (dataSet.isDrawMultiFilledEnable() && multiFiledDataList != null) {
+            applyValueTextStyle(dataSet);
+            Iterator<MultiFiledData> var25 = multiFiledDataList.iterator();
+
+            label82:
+            while(true) {
+                MultiFiledData data;
+                do {
+                    do {
+                        do {
+                            if (!var25.hasNext()) {
+                                break label82;
+                            }
+
+                            data = (MultiFiledData)var25.next();
+                        } while(data.range <= 1);
+                    } while(data.endIndex <= this.mXBounds.min);
+                } while(data.startIndex >= this.mXBounds.max);
+
+                this.cubicMultiFillPath.reset();
+                prevDx = 0.0F;
+                float prevDy = 0.0F;
+                float curDx = 0.0F;
+                float curDy = 0.0F;
+                firstPoint = dataSet.getEntryForIndex(data.startIndex);
+                textPoint = firstPoint;
+                endPoint = dataSet.getEntryForIndex(data.endIndex);
+                float k = (endPoint.getY() - firstPoint.getY()) / (endPoint.getX() - firstPoint.getX());
+                float b = firstPoint.getY() - firstPoint.getX() * k;
+//                Log.i("multiFill", String.format("first: %s, second: %s, k: %f, b: %f", firstPoint.toString(), endPoint.toString(), k, b));
+                int minIndex = Math.max(this.mXBounds.min, data.startIndex);
+                int maxIndex = Math.min(this.mXBounds.max, data.endIndex);
+                Entry prev = dataSet.getEntryForIndex(Math.max(minIndex - 1, 0));
+                Entry cur = dataSet.getEntryForIndex(Math.max(minIndex, 0));
+                Entry next = cur;
+                int nextIndex = -1;
+                if (cur == null) {
+                    return;
+                }
+
+                this.cubicMultiFillPath.moveTo(cur.getX(), cur.getY() * phaseY);
+
+                for(int j = minIndex + 1; j <= maxIndex; ++j) {
+                    Entry prevPrev = prev;
+                    prev = cur;
+                    cur = nextIndex == j ? next : dataSet.getEntryForIndex(j);
+                    if (cur.getY() > textPoint.getY()){
+                        textPoint = cur;
+                    }
+                    nextIndex = j + 1 < dataSet.getEntryCount() ? j + 1 : j;
+                    next = dataSet.getEntryForIndex(nextIndex);
+                    prevDx = (cur.getX() - prevPrev.getX()) * intensity;
+                    prevDy = (cur.getY() - prevPrev.getY()) * intensity;
+                    curDx = (next.getX() - prev.getX()) * intensity;
+                    curDy = (next.getY() - prev.getY()) * intensity;
+                    this.cubicMultiFillPath.cubicTo(prev.getX() + prevDx, (prev.getY() + prevDy) * phaseY, cur.getX() - curDx, (cur.getY() - curDy) * phaseY, cur.getX(), cur.getY() * phaseY);
+                }
+
+                float x;
+                if (this.mXBounds.max < data.endIndex) {
+                    x = endPoint.getX();
+                    this.cubicMultiFillPath.lineTo(x, (x * k + b) * phaseY);
+                }
+
+                if (this.mXBounds.min > data.startIndex) {
+                    cur = dataSet.getEntryForIndex(this.mXBounds.min - 1);
+                    x = cur.getX();
+//                    Log.i("multiFill", String.format("min: %d, startIndex: %d, x: %f,getY :%f, y: %f, phaseY: %f", this.mXBounds.min, data.startIndex, x, cur.getY(), (x * k + b) * phaseY, phaseY));
+                    this.cubicMultiFillPath.lineTo(x, (x * k + b) * phaseY);
+                }
+
+                this.cubicMultiFillPath.close();
+                this.drawCubicMultiFill(this.mBitmapCanvas, this.cubicMultiFillPath, trans, data, phaseY, textPoint);
+            }
+        } else if (dataSet.isDrawFilledEnabled()) {
 
             cubicFillPath.reset();
             cubicFillPath.addPath(cubicPath);
@@ -284,6 +422,20 @@ public class LineChartRenderer extends LineRadarRenderer {
 
     private float[] mLineBuffer = new float[4];
 
+    protected void drawCubicMultiFill(Canvas c, Path spline, Transformer trans, MultiFiledData filedData, float phaseY, Entry textPoint) {
+        trans.pathValueToPixel(spline);
+        Drawable drawable = filedData.fillDrawable;
+        if (drawable != null) {
+            this.drawFilledPath(c, spline, drawable);
+        } else {
+            this.drawFilledPath(c, spline, filedData.fillColor, filedData.fillAlpha);
+        }
+        mGetPositionBuffer[1] = textPoint.getY() * phaseY;
+        mGetPositionBuffer[0] = textPoint.getX();
+        trans.pointValuesToPixel(mGetPositionBuffer);
+        this.drawText(this.mBitmapCanvas, filedData.name, mGetPositionBuffer[0], mGetPositionBuffer[1] - filedData.nameOffsite, filedData.fillColor);
+    }
+
     /**
      * Draws a normal line.
      *
@@ -314,8 +466,89 @@ public class LineChartRenderer extends LineRadarRenderer {
 
         mXBounds.set(mChart, dataSet);
 
-        // if drawing filled is enabled
-        if (dataSet.isDrawFilledEnabled() && entryCount > 0) {
+        List<MultiFiledData> multiFiledDataList = dataSet.getMultiFiledDataList();
+        Entry endPoint;
+        float k;
+        float b;
+        if (dataSet.isDrawMultiFilledEnable() && multiFiledDataList != null) {
+            applyValueTextStyle(dataSet);
+            Iterator<MultiFiledData> var10 = multiFiledDataList.iterator();
+            label172:
+            while(true) {
+                MultiFiledData data;
+                do {
+                    do {
+                        do {
+                            if (!var10.hasNext()) {
+                                break label172;
+                            }
+
+                            data = var10.next();
+                        } while(data.range <= 1);
+                    } while(data.endIndex <= this.mXBounds.min);
+                } while(data.startIndex >= this.mXBounds.max);
+
+                this.cubicMultiFillPath.reset();
+                Entry firstPoint = dataSet.getEntryForIndex(data.startIndex);
+                Entry textPoint = firstPoint;
+                endPoint = dataSet.getEntryForIndex(data.endIndex);
+                if (firstPoint == null || endPoint == null) {
+                    return;
+                }
+
+                k = (endPoint.getY() - firstPoint.getY()) / (endPoint.getX() - firstPoint.getX());
+                b = firstPoint.getY() - firstPoint.getX() * k;
+//                Log.i("multiFill", String.format("first: %s, second: %s, k: %f, b: %f", firstPoint.toString(), endPoint.toString(), k, b));
+                int minIndex = Math.max(this.mXBounds.min, data.startIndex);
+                int maxIndex = Math.min(this.mXBounds.max, data.endIndex);
+                Entry cur = dataSet.getEntryForIndex(minIndex);
+                if (cur == null) {
+                    return;
+                }
+
+                Entry prev;
+                if (isDrawSteppedEnabled) {
+                    prev = dataSet.getEntryForIndex(minIndex + 1);
+                    this.cubicMultiFillPath.moveTo(prev.getX(), cur.getY() * phaseY);
+                } else {
+                    this.cubicMultiFillPath.moveTo(cur.getX(), cur.getY() * phaseY);
+                }
+
+                for(int j = minIndex + 1; j <= maxIndex; ++j) {
+                    prev = cur;
+                    cur = dataSet.getEntryForIndex(j);
+                    if (isDrawSteppedEnabled) {
+                        this.cubicMultiFillPath.lineTo(cur.getX(), prev.getY() * phaseY);
+                    }
+                    if (cur.getY() > textPoint.getY()){
+                        textPoint = cur;
+                    }
+                    this.cubicMultiFillPath.lineTo(cur.getX(), cur.getY() * phaseY);
+                }
+
+                float x;
+                if (this.mXBounds.max < data.endIndex) {
+                    x = endPoint.getX();
+                    this.cubicMultiFillPath.lineTo(x, (x * k + b) * phaseY);
+                }
+
+                if (this.mXBounds.min > data.startIndex) {
+                    cur = dataSet.getEntryForIndex(this.mXBounds.min - 1);
+                    x = cur.getX();
+//                    Log.i("multiFill", String.format("min: %d, startIndex: %d, x: %f,getY :%f, y: %f, phaseY: %f", this.mXBounds.min, data.startIndex, x, cur.getY(), (x * k + b) * phaseY, phaseY));
+                    if (isDrawSteppedEnabled) {
+                        prev = dataSet.getEntryForIndex(this.mXBounds.min);
+                        this.cubicMultiFillPath.lineTo(prev.getX(), (x * k + b) * phaseY);
+                        this.cubicMultiFillPath.lineTo(prev.getX(), prev.getY() * phaseY);
+                    } else {
+                        this.cubicMultiFillPath.lineTo(x, (x * k + b) * phaseY);
+                    }
+                }
+
+                this.cubicMultiFillPath.close();
+                this.drawCubicMultiFill(this.mBitmapCanvas, this.cubicMultiFillPath, trans, data, phaseY, textPoint);
+            }
+        } else if (dataSet.isDrawFilledEnabled() && entryCount > 0) {
             drawLinearFill(c, dataSet, trans, mXBounds);
         }
 
@@ -613,6 +846,8 @@ public class LineChartRenderer extends LineRadarRenderer {
                                     icon.getIntrinsicWidth(),
                                     icon.getIntrinsicHeight());
                         }
+                    } else  {
+                        Log.i("Draw value", "(entry == null");
                     }
                 }
 
@@ -763,7 +998,7 @@ public class LineChartRenderer extends LineRadarRenderer {
     }
 
     /**
-     * Releases the drawing bitmap. This should be called when {@link LineChart#onDetachedFromWindow()}.
+     * Releases the drawing bitmap. This should be called when {LineChart#onDetachedFromWindow()}.
      */
     public void releaseBitmap() {
         if (mBitmapCanvas != null) {
